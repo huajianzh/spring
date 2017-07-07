@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.DiaryMapper">
+
+	<update id="updateDiary" parameterType="com.example.demo.bean.Diary">
+		update diary set
+		title=#{title},content=#{content},pub_time=#{pubTime}
+		where _id=#{id}
+	</update>
+
+	<delete id="deleteDiary" parameterType="int">
+		delete from diary where _id=#{id}
+	</delete>
+	
+	<!--执行增加操作的SQL语句。id和parameterType分别与IUserOperation接口中的addUser方法的名字和参数类型一致。 
+		useGeneratedKeys设置为"true"表明要MyBatis获取由数据库自动生成的主键；keyProperty="id"指定把获取到的主键值注入到Diary的id属性 -->
+	<insert id="addDiary" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.example.demo.bean.Diary">
+		insert into diary(title,content,pub_time,user_id)
+		values(#{title},#{content},#{pubTime},#{userId})
+	</insert>
+
+	<resultMap type="com.example.demo.bean.Diary" id="DiaryMap">
+		<id property="id" column="_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="pubTime" column="pub_time" javaType="java.sql.Date" />
+		<association property="user" column="user_id"
+			javaType="com.example.demo.bean.User">
+			<id property="id" column="uId" />
+			<result property="name" column="name" />
+			<result property="sex" column="sex" />
+			<result property="sign" column="sign" />
+			<result property="photo" column="photo" />
+			<result property="age" column="age" />
+		</association>
+		<collection property="tags" ofType="com.example.demo.bean.Tags"
+			column="_id" select="com.example.demo.mapper.TagMapper.getTagsByDiaryId">
+		</collection>
+	</resultMap>
+
+	<select id="getDiaryById" parameterType="int" resultMap="DiaryMap">
+		select
+		d._id,d.title,d.content,d.pub_time,d.user_id,u._id as
+		uId,u.name,u.sex,u.sign,u.photo,u.age
+		from diary d left join users u on
+		d.user_id=u._id where d._id=#{id}
+	</select>
+
+	<select id="getAllDiary" resultMap="DiaryMap">
+		select
+		d._id,d.title,d.content,d.pub_time,d.user_id,u._id as
+		uId,u.name,u.sex,u.sign,u.photo,u.age
+		from diary d left join users u on
+		d.user_id=u._id
+	</select>
+
+	<resultMap type="com.example.demo.bean.Diary" id="DiaryMap2">
+		<id property="id" column="_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="pubTime" column="pub_time" javaType="java.sql.Date" />
+		<result property="userId" column="user_id" />
+		<association property="user" column="user_id"
+			javaType="com.example.demo.bean.User" select="com.example.demo.mapper.UserMapper.getUserById">
+		</association>
+		<collection property="tags" ofType="com.example.demo.bean.Tags"
+			column="_id" select="com.example.demo.mapper.TagMapper.getTagsByDiaryId">
+		</collection>
+	</resultMap>
+
+	<select id="getDiaryById2" parameterType="int" resultMap="DiaryMap2">
+		select
+		* from diary where _id=#{id}
+	</select>
+
+</mapper>
